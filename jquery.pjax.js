@@ -291,44 +291,45 @@ function pjax(options) {
 
     if (container.title) document.title = container.title
 
-    fire('pjax:beforeReplace', [container.contents, options], {
+    if (fire('pjax:beforeReplace', [container.contents, options], {
       state: pjax.state,
       previousState: previousState
-    })
-    context.html(container.contents)
+    })) {
+      context.html(container.contents)
 
-    // FF bug: Won't autofocus fields that are inserted via JS.
-    // This behavior is incorrect. So if theres no current focus, autofocus
-    // the last field.
-    //
-    // http://www.w3.org/html/wg/drafts/html/master/forms.html
-    var autofocusEl = context.find('input[autofocus], textarea[autofocus]').last()[0]
-    if (autofocusEl && document.activeElement !== autofocusEl) {
-      autofocusEl.focus();
-    }
-
-    executeScriptTags(container.scripts)
-
-    // Scroll to top by default
-    if (typeof options.scrollTo === 'number')
-      $(window).scrollTop(options.scrollTo)
-
-    // If the URL has a hash in it, make sure the browser
-    // knows to navigate to the hash.
-    if ( hash !== '' ) {
-      // Avoid using simple hash set here. Will add another history
-      // entry. Replace the url with replaceState and scroll to target
-      // by hand.
+      // FF bug: Won't autofocus fields that are inserted via JS.
+      // This behavior is incorrect. So if theres no current focus, autofocus
+      // the last field.
       //
-      //   window.location.hash = hash
-      var url = parseURL(container.url)
-      url.hash = hash
+      // http://www.w3.org/html/wg/drafts/html/master/forms.html
+      var autofocusEl = context.find('input[autofocus], textarea[autofocus]').last()[0]
+      if (autofocusEl && document.activeElement !== autofocusEl) {
+        autofocusEl.focus();
+      }
 
-      pjax.state.url = url.href
-      window.history.replaceState(pjax.state, container.title, url.href)
+      executeScriptTags(container.scripts)
 
-      var target = document.getElementById(url.hash.slice(1))
-      if (target) $(window).scrollTop($(target).offset().top)
+      // Scroll to top by default
+      if (typeof options.scrollTo === 'number')
+        $(window).scrollTop(options.scrollTo)
+
+      // If the URL has a hash in it, make sure the browser
+      // knows to navigate to the hash.
+      if ( hash !== '' ) {
+        // Avoid using simple hash set here. Will add another history
+        // entry. Replace the url with replaceState and scroll to target
+        // by hand.
+        //
+        //   window.location.hash = hash
+        var url = parseURL(container.url)
+        url.hash = hash
+
+        pjax.state.url = url.href
+        window.history.replaceState(pjax.state, container.title, url.href)
+
+        var target = document.getElementById(url.hash.slice(1))
+        if (target) $(window).scrollTop($(target).offset().top)
+      }
     }
 
     fire('pjax:success', [data, status, xhr, options])
